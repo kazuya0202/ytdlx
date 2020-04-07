@@ -85,6 +85,59 @@ var rootCmd = &cobra.Command{
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
+		var cu CommandUtility
+		var yts []*Youtube
+
+		cu.setCommandName(ytdlCommand)
+		cu.setEnvCommand()
+
+		if len(args) < 1 {
+			print(color.GreenString("enter") + "> ")
+			args = append(args, kz.GetInput())
+		}
+
+		// if !cconf.any() {
+		// 	println("Enter [URL | ID] or .txt file path.")
+
+		// 	for !cconf.any() {
+		// 		print(color.GreenString("enter") + "> ")
+		// 		cconf.URL = kz.GetInput()
+		// 		cconf.allCheck()
+		// 	}
+		// }
+
+		// append all target.
+		for _, arg := range args {
+			if kz.Exists(arg) {
+				// if arg is file
+				fp, err := os.Open(arg)
+				kz.CheckErr(err)
+				defer fp.Close()
+
+				scanner := bufio.NewScanner(fp)
+				for scanner.Scan() {
+					yts = append(yts, newYoutube(scanner.Text()))
+				}
+				if err := scanner.Err(); err != nil {
+					panic(err)
+				}
+			} else {
+				yts = append(yts, newYoutube(arg))
+			}
+		}
+
+		for _, y := range yts {
+			// y.showMessage()
+			if y.isAvailable() {
+				println("kore ID.")
+				cu.execute(y.ID)
+			} else {
+				println("kore not ID.")
+			}
+		}
+
+		os.Exit(1)
+
 		var cconf CommandConfing
 		cconf.cmdName = ytdlCommand
 
