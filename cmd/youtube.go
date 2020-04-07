@@ -1,4 +1,4 @@
-package cmd
+package main
 
 import (
 	"regexp"
@@ -9,41 +9,78 @@ import (
 
 // Youtube is struct
 type Youtube struct {
-	URL     string
-	ID      string
-	Pattern *regexp.Regexp
+	URL string
+	ID  string
+	Pat *Patterns
 }
 
-const expr string = `^.*\/(?:watch\?)?(?:v=)?(?:feature=[a-z_]+&)?(?:v=)?([a-zA-Z0-9-=_]+)(?:&feature=[a-z_]*)?(?:\?t=[0-9]+)?$`
+// Patterns is struct
+type Patterns struct {
+	yt  *regexp.Regexp
+	id  *regexp.Regexp
+	url *regexp.Regexp
+}
+
+// root
+func main() {
+	// yts := make(newYoutube("a"), 1)
+	xx := []string{"/\\", "b", "c"}
+	var yts []*Youtube
+	for _, x := range xx {
+		yts = append(yts, newYoutube(x))
+	}
+
+	for _, y := range yts {
+		y.showMessage()
+	}
+}
 
 func newYoutube(str string) *Youtube {
-	r, _ := regexp.Compile(expr)
-	return &Youtube{
-		URL:     str,
-		ID:      "",
-		Pattern: r,
+	// pattern for extracting.
+	yt, _ := regexp.Compile(`^.*\/(?:watch\?)?(?:v=)?(?:feature=[a-z_]+&)?(?:v=)?([a-zA-Z0-9-=_]+)(?:&feature=[a-z_]*)?(?:\?t=[0-9]+)?$`)
+	// pattern for checking id.
+	id, _ := regexp.Compile(`[a-zA-Z0-9-=_]+`) // TODO: スラッシュとかと一緒にアルファベットがあったらそれだけで判定される
+	// pattern for checking url.
+	url, _ := regexp.Compile(`http(s)?://([\w-]+\.)+[\w-]+(/[\w- ./?%&=]*)?`)
+
+	youtube := Youtube{
+		URL: str,
+		Pat: &Patterns{
+			yt:  yt,
+			id:  id,
+			url: url,
+		},
 	}
+	youtube.extractID()
+	return &youtube
 }
 
-func (yt *Youtube) isOK() bool {
-	return yt.ID != ""
+func (y *Youtube) isOK() bool {
+	return y.ID != "" && y.Pat.id.MatchString(y.ID)
 }
 
-func (yt *Youtube) extractID() {
-	if yt.isURL() && yt.isYoutubeURL() {
-		yt.ID = yt.Pattern.FindStringSubmatch(yt.URL)[1]
+func (y *Youtube) showMessage() {
+	// TODO: else{} <- remove
+	if !y.isOK() {
+		println(y.URL, "is not correct.")
 	} else {
-		if matched, _ := regexp.MatchString(`[a-zA-Z0-9-=_]+`, yt.URL); matched {
-			yt.ID = yt.URL
-		}
+		println("[DEBUG]:", y.URL, "is correct.")
+		println("id:", y.ID)
 	}
 }
 
-func (yt *Youtube) isURL() bool {
-	m, _ := regexp.MatchString(`http(s)?://([\w-]+\.)+[\w-]+(/[\w- ./?%&=]*)?`, yt.URL)
-	return m
+func (y *Youtube) extractID() {
+	if y.isYoutubeURL() {
+		y.ID = y.Pat.yt.FindStringSubmatch(y.URL)[1]
+	} else if y.Pat.id.MatchString(y.URL) {
+		y.ID = y.URL
+	}
 }
 
-func (yt *Youtube) isYoutubeURL() bool {
-	return yt.Pattern.MatchString(yt.URL)
+func (y *Youtube) isURL() bool {
+	return y.Pat.url.MatchString(y.URL)
+}
+
+func (y *Youtube) isYoutubeURL() bool {
+	return y.isURL() && y.Pat.yt.MatchString(y.URL)
 }
