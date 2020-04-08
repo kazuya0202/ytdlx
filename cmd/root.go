@@ -17,7 +17,6 @@ limitations under the License.
 */
 
 import (
-	"bufio"
 	"fmt"
 	"log"
 	"os"
@@ -108,41 +107,7 @@ var rootCmd = &cobra.Command{
 			}
 		}
 
-		for _, y := range yts {
-			// y.showMessage()
-			println("\n>", y.URL)
-
-			if y.isAvailable() {
-				cu.execute(y.ID)
-			} else {
-				log.Printf("[%s]: '%s' is not valid URL.\n", color.BlueString("Warning"), y.URL)
-			}
-		}
-
-		os.Exit(0)
-
-		var cconf CommandConfing
-		cconf.cmdName = ytdlCommand
-
-		// URL
-		if len(args) > 0 {
-			cconf.URL = args[0]
-		}
-
-		cconf.allCheck()
-
-		if !cconf.any() {
-			println("Enter [URL | ID] or .txt file path.")
-
-			for !cconf.any() {
-				print(color.GreenString("enter") + "> ")
-				cconf.URL = kz.GetInput()
-				cconf.allCheck()
-			}
-		}
-
-		log.Printf("[%s]: %s\n", color.BlueString("Processing"), cconf.URL)
-
+		// select download type
 		var st selectType
 
 		st.Default = "Default"
@@ -150,44 +115,98 @@ var rootCmd = &cobra.Command{
 		st.VideoOnly = "Video only"
 		st.FullHD = "Full HD"
 		st.Best = "Best"
-		st.Select = "Select"
 		st.Available = "#Available list"
+		// st.Select = "Select"
 		// st.Format = "#Format"
 		// st.OutputTitle = "Title"
 		st.setStringArray()
 
 		st._select()
-		cconf.determineOption(&st)
-		if st.selected == st.Select || defs.IsSelect {
-			cconf.selectOptions()
-		}
+		cu.determineOption(st)
 
-		// execute URL
-		if cconf.IsURL || cconf.IsID {
-			cconf.execYtdl()
-		}
+		for _, y := range yts {
+			// y.showMessage()
+			println("\n>", y.URL)
+			available := y.isAvailable()
 
-		// execute URL in text file
-		if cconf.IsExists {
-			fp, err := os.Open(cconf.URL)
-			kz.CheckErr(err)
-			defer fp.Close()
-
-			scanner := bufio.NewScanner(fp)
-			for scanner.Scan() {
-				cconf.URL = scanner.Text()
-
-				if cconf.checkURL() || cconf.checkID() {
-					cconf.execYtdl()
-				} else {
-					println(cconf.URL, "is not URL.")
-				}
-				println()
-			}
-			if err := scanner.Err(); err != nil {
-				panic(err)
+			if defs.IsSelect && available {
+				cu.selectTypes(y.ID)
+			} else if available {
+				cu.execute(y.ID)
+			} else {
+				log.Printf("[%s]: '%s' is not valid URL.\n", color.BlueString("Warning"), y.URL)
 			}
 		}
+
+		// os.Exit(0)
+
+		// var cconf CommandConfing
+		// cconf.cmdName = ytdlCommand
+
+		// // URL
+		// if len(args) > 0 {
+		// 	cconf.URL = args[0]
+		// }
+
+		// cconf.allCheck()
+
+		// if !cconf.any() {
+		// 	println("Enter [URL | ID] or .txt file path.")
+
+		// 	for !cconf.any() {
+		// 		print(color.GreenString("enter") + "> ")
+		// 		cconf.URL = kz.GetInput()
+		// 		cconf.allCheck()
+		// 	}
+		// }
+
+		// log.Printf("[%s]: %s\n", color.BlueString("Processing"), cconf.URL)
+
+		// // var st selectType
+
+		// st.Default = "Default"
+		// st.AudioOnly = "Audio only"
+		// st.VideoOnly = "Video only"
+		// st.FullHD = "Full HD"
+		// st.Best = "Best"
+		// st.Select = "Select"
+		// st.Available = "#Available list"
+		// // st.Format = "#Format"
+		// // st.OutputTitle = "Title"
+		// st.setStringArray()
+
+		// st._select()
+		// cconf.determineOption(&st)
+		// if st.selected == st.Select || defs.IsSelect {
+		// 	cconf.selectOptions()
+		// }
+
+		// // execute URL
+		// if cconf.IsURL || cconf.IsID {
+		// 	cconf.execYtdl()
+		// }
+
+		// // execute URL in text file
+		// if cconf.IsExists {
+		// 	fp, err := os.Open(cconf.URL)
+		// 	kz.CheckErr(err)
+		// 	defer fp.Close()
+
+		// 	scanner := bufio.NewScanner(fp)
+		// 	for scanner.Scan() {
+		// 		cconf.URL = scanner.Text()
+
+		// 		if cconf.checkURL() || cconf.checkID() {
+		// 			cconf.execYtdl()
+		// 		} else {
+		// 			println(cconf.URL, "is not URL.")
+		// 		}
+		// 		println()
+		// 	}
+		// 	if err := scanner.Err(); err != nil {
+		// 		panic(err)
+		// 	}
+		// }
 	},
 }
 

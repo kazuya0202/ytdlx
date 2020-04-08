@@ -12,18 +12,19 @@ func (st *selectType) setStringArray() {
 		st.VideoOnly,
 		st.FullHD,
 		st.Best,
-		st.Select,
 		st.Available,
+		// st.Select,
 		// st.Format,
 	}
 }
 
 func (st *selectType) _select() string {
-	any := false
-	any = any || defs.IsAvailable || defs.IsBest || defs.IsDefault
-	any = any || defs.IsFullHD || defs.IsM4A || defs.IsMP4 || defs.IsSelect
+	// any := false
+	// any = any || defs.IsAvailable || defs.IsBest || defs.IsDefault
+	// any = any || defs.IsFullHD || defs.IsM4A || defs.IsMP4 || defs.IsSelect
 
-	if !any {
+	// if !any {
+	if defs.IsSelect {
 		// fzf
 		idx, err := fuzzyfinder.Find(
 			st.arrayS,
@@ -32,7 +33,11 @@ func (st *selectType) _select() string {
 		kz.CheckErr(err)
 
 		st.selected = st.arrayS[idx]
-		println("selected: " + st.selected)
+		println("selected:", st.selected)
 	}
 	return st.selected
+}
+
+func (st *selectType) isMatched(target string) bool {
+	return st.selected == target
 }
