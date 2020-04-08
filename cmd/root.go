@@ -72,7 +72,7 @@ type selectType struct {
 
 var (
 	defs ArgDefaults
-	st   selectType
+	cu   CommandUtility
 )
 
 const ytdlCommand string = "youtube-dl"
@@ -85,58 +85,41 @@ var rootCmd = &cobra.Command{
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
-		var cu CommandUtility
 		var yts []*Youtube
 
 		cu.setCommandName(ytdlCommand)
-		cu.setEnvCommand()
+		cu.determineEnvCommand()
 
 		if len(args) < 1 {
 			print(color.GreenString("enter") + "> ")
 			args = append(args, kz.GetInput())
 		}
 
-		// if !cconf.any() {
-		// 	println("Enter [URL | ID] or .txt file path.")
-
-		// 	for !cconf.any() {
-		// 		print(color.GreenString("enter") + "> ")
-		// 		cconf.URL = kz.GetInput()
-		// 		cconf.allCheck()
-		// 	}
-		// }
-
 		// append all target.
 		for _, arg := range args {
 			if kz.Exists(arg) {
 				// if arg is file
-				fp, err := os.Open(arg)
-				kz.CheckErr(err)
-				defer fp.Close()
-
-				scanner := bufio.NewScanner(fp)
-				for scanner.Scan() {
-					yts = append(yts, newYoutube(scanner.Text()))
-				}
-				if err := scanner.Err(); err != nil {
-					panic(err)
+				for _, x := range readFileContent(arg) {
+					yts = append(yts, newYoutube(x))
 				}
 			} else {
+				// URL or ID.
 				yts = append(yts, newYoutube(arg))
 			}
 		}
 
 		for _, y := range yts {
 			// y.showMessage()
+			println("\n>", y.URL)
+
 			if y.isAvailable() {
-				println("kore ID.")
 				cu.execute(y.ID)
 			} else {
-				println("kore not ID.")
+				log.Printf("[%s]: '%s' is not valid URL.\n", color.BlueString("Warning"), y.URL)
 			}
 		}
 
-		os.Exit(1)
+		os.Exit(0)
 
 		var cconf CommandConfing
 		cconf.cmdName = ytdlCommand
@@ -159,6 +142,8 @@ var rootCmd = &cobra.Command{
 		}
 
 		log.Printf("[%s]: %s\n", color.BlueString("Processing"), cconf.URL)
+
+		var st selectType
 
 		st.Default = "Default"
 		st.AudioOnly = "Audio only"

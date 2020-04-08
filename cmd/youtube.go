@@ -1,13 +1,8 @@
 package cmd
 
 import (
-	"fmt"
-	"log"
 	"os/exec"
 	"regexp"
-	"strings"
-
-	"github.com/fatih/color"
 )
 
 // https://www.youtube.com/watch?v=aT_cmdRwxoo
@@ -49,18 +44,22 @@ func newYoutube(str string) *Youtube {
 }
 
 func (y *Youtube) isAvailable() bool {
-	return y.ID != "" && y.Pat.id.MatchString(y.ID)
+	return y.Pat.id.MatchString(y.ID) && func() bool {
+		err := exec.Command(cu.CmdName, "-e", y.ID).Run()
+		return err == nil
+		// return true
+	}()
 }
 
-func (y *Youtube) showMessage() {
-	// TODO: else{} <- remove
-	if !y.isAvailable() {
-		println(y.URL, "is not correct.")
-	} else {
-		println("[DEBUG]:", y.URL, "is correct.")
-		println("id:", y.ID)
-	}
-}
+// func (y *Youtube) showMessage() {
+// 	// TODO: else{} <- remove
+// 	if !y.isAvailable() {
+// 		println(y.URL, "is not correct.")
+// 	} else {
+// 		println("[DEBUG]:", y.URL, "is correct.")
+// 		println("id:", y.ID)
+// 	}
+// }
 
 func (y *Youtube) extractID() {
 	if y.isYoutubeURL() {
@@ -76,23 +75,4 @@ func (y *Youtube) isURL() bool {
 
 func (y *Youtube) isYoutubeURL() bool {
 	return y.isURL() && y.Pat.yt.MatchString(y.URL)
-}
-
-func (y *Youtube) execYtdl(cu *CommandUtility) {
-	// get environment command
-	envCmd := getEnvCommand()
-
-	// otuput option
-	if defs.OutputTitle != "" {
-		cu.Option += fmt.Sprintf(" -o %s", defs.OutputTitle)
-		cu.Option = strings.TrimSpace(cu.Option)
-	}
-	// y.appendOutputTitle()
-
-	arg := fmt.Sprintf("%s %s %s", cu.CmdName, cu.Option, y.URL)
-
-	command := exec.Command(envCmd.Cmd, envCmd.Option, arg)
-	log.Printf("[%s]: %s\n", color.BlueString("Execute"), command.String())
-	// ExecCmdInRealTime(command)
-	// os.Exit(1)
 }

@@ -42,7 +42,7 @@ func TestYoutube(t *testing.T) {
 		// y.showMessage()
 		if y.isAvailable() {
 			println("kore ID.")
-			y.execYtdl(&cc)
+			// y.execYtdl(&cc)
 		} else {
 			println("kore not ID.")
 		}

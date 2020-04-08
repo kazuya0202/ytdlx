@@ -19,7 +19,7 @@ type CommandUtility struct {
 	EnvCmd  envCommand
 }
 
-func (c *CommandUtility) setEnvCommand() {
+func (c *CommandUtility) determineEnvCommand() {
 	if runtime.GOOS == "windows" {
 		// windows
 		c.EnvCmd = envCommand{"cmd", "/c"}
@@ -46,6 +46,6 @@ func (c *CommandUtility) execute(id string) {
 	c.Arg = fmt.Sprintf("%s %s %s", c.CmdName, c.Option, id)
 	c.Command = exec.Command(c.EnvCmd.Cmd, c.EnvCmd.Option, c.Arg)
 
-	log.Printf("[%s]: %s\n", color.BlueString("Execute"), c.Command.String())
+	log.Printf("[%s]: %s\n", color.BlueString("Running"), c.Command.String())
 	// ExecCmdInRealTime(c.Command)
 }

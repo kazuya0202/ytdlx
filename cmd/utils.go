@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 	"os/exec"
 	"runtime"
 	"strings"
@@ -73,6 +74,7 @@ func ExecCmdInRealTime(cmd *exec.Cmd) error {
 	if ret != nil {
 		log.Fatal(err)
 	}
+	fmt.Println(ret)
 
 	return nil
 }
@@ -86,4 +88,23 @@ func SjisToUtf8(str string) string {
 		return ""
 	}
 	return string(ret)
+}
+
+// readFileContent ...
+func readFileContent(path string) []string {
+	var array []string
+
+	fp, err := os.Open(path)
+	kz.CheckErr(err)
+	defer fp.Close()
+
+	scanner := bufio.NewScanner(fp)
+	for scanner.Scan() {
+		array = append(array, scanner.Text())
+	}
+	if err := scanner.Err(); err != nil {
+		panic(err)
+	}
+
+	return array
 }
