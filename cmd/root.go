@@ -124,7 +124,14 @@ var rootCmd = &cobra.Command{
 		st._select()
 		cu.determineOption(st)
 
-		for _, y := range yts {
+		isMulti := len(yts) > 1
+		if isMulti {
+			cu.Option +
+		}
+		c.appendOutputTitle()
+
+
+		for i, y := range yts {
 			// y.showMessage()
 			println("\n>", y.URL)
 			available := y.isAvailable()
@@ -222,16 +229,15 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.ytdlx.yaml)")
-	rootCmd.PersistentFlags().BoolVarP(&defs.IsAvailable, "format-list", "F", false, "Show available format list")
-	rootCmd.PersistentFlags().BoolVarP(&defs.IsDefault, "default", "d", false, "Download default format")
-	rootCmd.PersistentFlags().BoolVarP(&defs.IsM4A, "audio", "a", false, "Download audio format only")
-	rootCmd.PersistentFlags().BoolVarP(&defs.IsMP4, "video", "v", false, "Download video format only")
-	rootCmd.PersistentFlags().BoolVarP(&defs.IsFullHD, "full-hd", "f", false, "Download full HD format")
-	rootCmd.PersistentFlags().BoolVarP(&defs.IsBest, "best", "b", false, "Download best format")
-	rootCmd.PersistentFlags().BoolVarP(&defs.IsSelect, "select", "s", false, "Download select format")
-	rootCmd.PersistentFlags().StringVarP(&defs.OutputTitle, "output", "o", "", "Output filename")
-	// rootCmd.PersistentFlags().StringVarP(&defs.format, "format", "f", "", "specify format")
+	rootCmd.Flags().BoolVarP(&defs.IsAvailable, "format-list", "F", false, "Show available format list")
+	rootCmd.Flags().BoolVarP(&defs.IsDefault, "default", "d", false, "Download default format")
+	rootCmd.Flags().BoolVarP(&defs.IsM4A, "audio", "a", false, "Download audio format only")
+	rootCmd.Flags().BoolVarP(&defs.IsMP4, "video", "v", false, "Download video format only")
+	rootCmd.Flags().BoolVarP(&defs.IsFullHD, "full-hd", "f", false, "Download full HD format")
+	rootCmd.Flags().BoolVarP(&defs.IsBest, "best", "b", false, "Download best format")
+	rootCmd.Flags().BoolVarP(&defs.IsSelect, "select", "s", false, "Download select format")
+	rootCmd.Flags().StringVarP(&defs.OutputTitle, "output", "o", "", "Output filename")
+	// rootCmd.Flags().StringVarP(&defs.format, "format", "f", "", "specify format")
 }
 
 // initConfig reads in config file and ENV variables if set.

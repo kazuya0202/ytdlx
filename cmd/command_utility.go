@@ -43,8 +43,6 @@ func (c *CommandUtility) appendOutputTitle() {
 }
 
 func (c *CommandUtility) execute(id string) {
-	c.appendOutputTitle()
-
 	c.Arg = fmt.Sprintf("%s %s %s", c.CmdName, c.Option, id)
 	c.Command = exec.Command(c.EnvCmd.Cmd, c.EnvCmd.Option, c.Arg)
 
@@ -75,7 +73,7 @@ func (c *CommandUtility) determineOption(st selectType) {
 	}
 }
 
-func (c *CommandUtility) selectOptions(id string) {
+func (c *CommandUtility) selectTypes(id string) {
 	c.Option = "-F"
 
 	arg := fmt.Sprintf("%s %s %s", c.CmdName, c.Option, id)

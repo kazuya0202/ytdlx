@@ -51,16 +51,6 @@ func (y *Youtube) isAvailable() bool {
 	}()
 }
 
-// func (y *Youtube) showMessage() {
-// 	// TODO: else{} <- remove
-// 	if !y.isAvailable() {
-// 		println(y.URL, "is not correct.")
-// 	} else {
-// 		println("[DEBUG]:", y.URL, "is correct.")
-// 		println("id:", y.ID)
-// 	}
-// }
-
 func (y *Youtube) extractID() {
 	if y.isYoutubeURL() {
 		y.ID = y.Pat.yt.FindStringSubmatch(y.URL)[1]
