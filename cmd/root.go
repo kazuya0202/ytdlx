@@ -23,50 +23,24 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
-
-	kz "github.com/kazuya0202/kazuya0202"
 )
 
-// ArgDefaults ...
+// execute base command.
+const baseCommand string = "youtube-dl"
+
+// ArgDefaults is struct.
 type ArgDefaults struct {
-	IsM4A       bool
-	IsMP4       bool
-	IsFullHD    bool
-	IsBest      bool
-	IsDefault   bool
-	IsAvailable bool
-	IsSelect    bool
-	// Format      string
-	OutputTitle string
-}
+	IsM4A               bool
+	IsMP4               bool
+	IsBest              bool
+	IsDefault           bool
+	IsAvailable         bool
+	IsSelect            bool
+	IsSelectEachFormat  bool
+	IsFindFromAvailable bool
+	OutputTitle         string
 
-// CommandConfing ...
-type CommandConfing struct {
-	cmdName string
-	URL     string
-	Option  string
-
-	ID string
-
-	IsURL    bool
-	IsID     bool
-	IsExists bool
-}
-
-type selectType struct {
-	Default   string
-	AudioOnly string
-	VideoOnly string
-	FullHD    string
-	Best      string
-	Available string
-	Select    string
-	// Format    string
-	// OutputTitle string
-
-	arrayS   []string
-	selected string
-	idx      int
+	// Format      string  // TODO
 }
 
 var (
@@ -74,29 +48,25 @@ var (
 	cu   CommandUtility
 )
 
-const ytdlCommand string = "youtube-dl"
-
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "ytdlx [YouTube-URL | YouTuve-ID]",
 	Short: "The command to make youtube-dl easy to use.",
 	Long:  `The command to make youtube-dl easy to use.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
 		var yts []*Youtube
 
-		cu.setCommandName(ytdlCommand)
+		cu.setCommandName(baseCommand)
 		cu.determineEnvCommand()
 
 		if len(args) < 1 {
 			print(color.GreenString("enter") + "> ")
-			args = append(args, kz.GetInput())
+			args = append(args, GetInput())
 		}
 
 		// append all target.
 		for _, arg := range args {
-			if kz.Exists(arg) {
+			if Exists(arg) {
 				// if arg is file
 				for _, x := range readFileContent(arg) {
 					yts = append(yts, newYoutube(x))
@@ -109,111 +79,47 @@ var rootCmd = &cobra.Command{
 
 		// select download type
 		var st selectType
-
-		st.Default = "Default"
-		st.AudioOnly = "Audio only"
-		st.VideoOnly = "Video only"
-		st.FullHD = "Full HD"
-		st.Best = "Best"
-		st.Available = "#Available list"
-		// st.Select = "Select"
-		// st.Format = "#Format"
-		// st.OutputTitle = "Title"
 		st.setStringArray()
 
-		st._select()
-		cu.determineOption(st)
-
-		isMulti := len(yts) > 1
-		if isMulti {
-			cu.Option +
+		if defs.IsSelect && !defs.IsSelectEachFormat {
+			st.selectType()
+			cu.determineOption(st)
 		}
-		c.appendOutputTitle()
 
+		// is multi download
+		isMulti := len(yts) > 1
 
 		for i, y := range yts {
-			// y.showMessage()
 			println("\n>", y.URL)
-			available := y.isAvailable()
 
-			if defs.IsSelect && available {
-				cu.selectTypes(y.ID)
-			} else if available {
-				cu.execute(y.ID)
-			} else {
-				log.Printf("[%s]: '%s' is not valid URL.\n", color.BlueString("Warning"), y.URL)
+			if !y.isAvailable() {
+				log.Printf("[%s]: '%s' is not valid URL.\n", color.BlueString("ERROR"), y.URL)
+				continue
 			}
+
+			if defs.IsSelectEachFormat {
+				// select every download.
+				st.selectType()
+				cu.determineOption(st)
+			} else if defs.IsFindFromAvailable {
+				// select every download by using fzf.
+				cu.selectAvailableTypes(y.ID)
+			}
+
+			// command
+			cu.Arg = fmt.Sprintf("%s %s %s", cu.CmdName, cu.Option, y.ID)
+
+			if defs.OutputTitle != "" {
+				if isMulti {
+					cu.Arg += fmt.Sprintf(" -o %s_%03d", defs.OutputTitle, i+1)
+				} else {
+					cu.Arg += fmt.Sprintf(" -o %s", defs.OutputTitle)
+				}
+			}
+
+			// execute
+			cu.execute()
 		}
-
-		// os.Exit(0)
-
-		// var cconf CommandConfing
-		// cconf.cmdName = ytdlCommand
-
-		// // URL
-		// if len(args) > 0 {
-		// 	cconf.URL = args[0]
-		// }
-
-		// cconf.allCheck()
-
-		// if !cconf.any() {
-		// 	println("Enter [URL | ID] or .txt file path.")
-
-		// 	for !cconf.any() {
-		// 		print(color.GreenString("enter") + "> ")
-		// 		cconf.URL = kz.GetInput()
-		// 		cconf.allCheck()
-		// 	}
-		// }
-
-		// log.Printf("[%s]: %s\n", color.BlueString("Processing"), cconf.URL)
-
-		// // var st selectType
-
-		// st.Default = "Default"
-		// st.AudioOnly = "Audio only"
-		// st.VideoOnly = "Video only"
-		// st.FullHD = "Full HD"
-		// st.Best = "Best"
-		// st.Select = "Select"
-		// st.Available = "#Available list"
-		// // st.Format = "#Format"
-		// // st.OutputTitle = "Title"
-		// st.setStringArray()
-
-		// st._select()
-		// cconf.determineOption(&st)
-		// if st.selected == st.Select || defs.IsSelect {
-		// 	cconf.selectOptions()
-		// }
-
-		// // execute URL
-		// if cconf.IsURL || cconf.IsID {
-		// 	cconf.execYtdl()
-		// }
-
-		// // execute URL in text file
-		// if cconf.IsExists {
-		// 	fp, err := os.Open(cconf.URL)
-		// 	kz.CheckErr(err)
-		// 	defer fp.Close()
-
-		// 	scanner := bufio.NewScanner(fp)
-		// 	for scanner.Scan() {
-		// 		cconf.URL = scanner.Text()
-
-		// 		if cconf.checkURL() || cconf.checkID() {
-		// 			cconf.execYtdl()
-		// 		} else {
-		// 			println(cconf.URL, "is not URL.")
-		// 		}
-		// 		println()
-		// 	}
-		// 	if err := scanner.Err(); err != nil {
-		// 		panic(err)
-		// 	}
-		// }
 	},
 }
 
@@ -230,12 +136,13 @@ func init() {
 	cobra.OnInitialize(initConfig)
 
 	rootCmd.Flags().BoolVarP(&defs.IsAvailable, "format-list", "F", false, "Show available format list")
-	rootCmd.Flags().BoolVarP(&defs.IsDefault, "default", "d", false, "Download default format")
-	rootCmd.Flags().BoolVarP(&defs.IsM4A, "audio", "a", false, "Download audio format only")
-	rootCmd.Flags().BoolVarP(&defs.IsMP4, "video", "v", false, "Download video format only")
-	rootCmd.Flags().BoolVarP(&defs.IsFullHD, "full-hd", "f", false, "Download full HD format")
-	rootCmd.Flags().BoolVarP(&defs.IsBest, "best", "b", false, "Download best format")
-	rootCmd.Flags().BoolVarP(&defs.IsSelect, "select", "s", false, "Download select format")
+	rootCmd.Flags().BoolVarP(&defs.IsFindFromAvailable, "find", "f", false, "Downloads selected from available format list")
+	rootCmd.Flags().BoolVarP(&defs.IsDefault, "default", "d", false, "Downloads default format")
+	rootCmd.Flags().BoolVarP(&defs.IsM4A, "audio", "a", false, "Downloads audio format only")
+	rootCmd.Flags().BoolVarP(&defs.IsMP4, "video", "v", false, "Downloads video format only")
+	rootCmd.Flags().BoolVarP(&defs.IsBest, "best", "b", false, "Downloads best format")
+	rootCmd.Flags().BoolVarP(&defs.IsSelect, "select", "s", false, "Downloads selected format")
+	rootCmd.Flags().BoolVarP(&defs.IsSelectEachFormat, "select-each", "S", false, "Downloads each selected format")
 	rootCmd.Flags().StringVarP(&defs.OutputTitle, "output", "o", "", "Output filename")
 	// rootCmd.Flags().StringVarP(&defs.format, "format", "f", "", "specify format")
 }

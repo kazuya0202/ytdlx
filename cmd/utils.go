@@ -10,7 +10,6 @@ import (
 	"runtime"
 	"strings"
 
-	kz "github.com/kazuya0202/kazuya0202"
 	"golang.org/x/text/encoding/japanese"
 	"golang.org/x/text/transform"
 )
@@ -27,7 +26,6 @@ func getEnvCommand() envCommand {
 	if runtime.GOOS == "windows" {
 		return envCommand{"cmd", "/c"}
 	}
-
 	// other than windows
 	return envCommand{"sh", "-c"}
 }
@@ -35,9 +33,9 @@ func getEnvCommand() envCommand {
 // ExecCmdInRealTime executes command in real time.
 func ExecCmdInRealTime(cmd *exec.Cmd) error {
 	stdout, err := cmd.StdoutPipe()
-	kz.CheckErr(err)
+	CheckErr(err)
 	stderr, err := cmd.StderrPipe()
-	kz.CheckErr(err)
+	CheckErr(err)
 
 	err = cmd.Start()
 
@@ -95,7 +93,7 @@ func readFileContent(path string) []string {
 	var array []string
 
 	fp, err := os.Open(path)
-	kz.CheckErr(err)
+	CheckErr(err)
 	defer fp.Close()
 
 	scanner := bufio.NewScanner(fp)
@@ -107,4 +105,24 @@ func readFileContent(path string) []string {
 	}
 
 	return array
+}
+
+// CheckErr checks nil.
+func CheckErr(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+// Exists checks path.
+func Exists(path string) bool {
+	_, err := os.Stat(path)
+	return err == nil
+}
+
+// GetInput scans input string.
+func GetInput() string {
+	stdin := bufio.NewScanner(os.Stdin)
+	stdin.Scan()
+	return stdin.Text()
 }

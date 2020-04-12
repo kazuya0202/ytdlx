@@ -3,10 +3,9 @@ package cmd
 import (
 	"os/exec"
 	"regexp"
-)
 
-// https://www.youtube.com/watch?v=aT_cmdRwxoo
-// https://youtu.be/9E8eakpIsNE
+	"github.com/fatih/color"
+)
 
 // Youtube is struct
 type Youtube struct {
@@ -17,9 +16,9 @@ type Youtube struct {
 
 // Patterns is struct
 type Patterns struct {
-	yt  *regexp.Regexp
-	id  *regexp.Regexp
-	url *regexp.Regexp
+	YT  *regexp.Regexp
+	ID  *regexp.Regexp
+	URL *regexp.Regexp
 }
 
 // newYoutube creates initialized Youtube instance.
@@ -34,9 +33,9 @@ func newYoutube(str string) *Youtube {
 	youtube := Youtube{
 		URL: str,
 		Pat: &Patterns{
-			yt:  yt,
-			id:  id,
-			url: url,
+			YT:  yt,
+			ID:  id,
+			URL: url,
 		},
 	}
 	youtube.extractID()
@@ -44,25 +43,27 @@ func newYoutube(str string) *Youtube {
 }
 
 func (y *Youtube) isAvailable() bool {
-	return y.Pat.id.MatchString(y.ID) && func() bool {
-		err := exec.Command(cu.CmdName, "-e", y.ID).Run()
+	return y.Pat.ID.MatchString(y.ID) && func() bool {
+		print(color.YellowString("Validating..."))
+		err := exec.Command(cu.CmdName, "-s", y.ID).Run()
+		print("\r")
+
 		return err == nil
-		// return true
 	}()
 }
 
 func (y *Youtube) extractID() {
 	if y.isYoutubeURL() {
-		y.ID = y.Pat.yt.FindStringSubmatch(y.URL)[1]
-	} else if y.Pat.id.MatchString(y.URL) {
+		y.ID = y.Pat.YT.FindStringSubmatch(y.URL)[1]
+	} else if y.Pat.ID.MatchString(y.URL) {
 		y.ID = y.URL
 	}
 }
 
 func (y *Youtube) isURL() bool {
-	return y.Pat.url.MatchString(y.URL)
+	return y.Pat.URL.MatchString(y.URL)
 }
 
 func (y *Youtube) isYoutubeURL() bool {
-	return y.isURL() && y.Pat.yt.MatchString(y.URL)
+	return y.isURL() && y.Pat.YT.MatchString(y.URL)
 }

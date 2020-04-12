@@ -35,18 +35,17 @@ func (c *CommandUtility) setCommandName(cmdName string) {
 	c.CmdName = cmdName
 }
 
-func (c *CommandUtility) appendOutputTitle() {
-	if defs.OutputTitle != "" {
-		c.Option += fmt.Sprintf(" -o %s", defs.OutputTitle)
-		c.Option = strings.TrimSpace(c.Option)
-	}
+func (c *CommandUtility) shapeCommandString() string {
+	// <appName> <opt> <cmdName> ... -> <cmdName> ...
+	str := c.Command.String()
+	str = str[strings.Index(str, c.CmdName):]
+	str = strings.ReplaceAll(str, "  ", " ") // "  " -> " "
+	return str
 }
 
-func (c *CommandUtility) execute(id string) {
-	c.Arg = fmt.Sprintf("%s %s %s", c.CmdName, c.Option, id)
+func (c *CommandUtility) execute() {
 	c.Command = exec.Command(c.EnvCmd.Cmd, c.EnvCmd.Option, c.Arg)
-
-	log.Printf("[%s]: %s\n", color.BlueString("Running"), c.Command.String())
+	log.Printf("[%s]: %s\n", color.BlueString("SUCCESS"), c.shapeCommandString())
 	// ExecCmdInRealTime(c.Command)
 }
 
@@ -67,16 +66,15 @@ func (c *CommandUtility) determineOption(st selectType) {
 	} else if defs.IsBest || st.isMatched(st.Best) {
 		// best format download
 		c.Option = "-f bestvideo[ext=mp4]+bestaudio[ext=m4a] --merge-output-format mp4"
-	} else if defs.IsFullHD || st.isMatched(st.FullHD) {
-		// full hd download
-		c.Option = "-f 137+140 --merge-output-format mp4"
+	} else if st.isMatched(st.SelectEachFormat) {
+		defs.IsSelectEachFormat = true
+	} else if st.isMatched(st.FindFromAvailable) {
+		defs.IsFindFromAvailable = true
 	}
 }
 
-func (c *CommandUtility) selectTypes(id string) {
-	c.Option = "-F"
-
-	arg := fmt.Sprintf("%s %s %s", c.CmdName, c.Option, id)
+func (c *CommandUtility) selectAvailableTypes(id string) {
+	arg := fmt.Sprintf("%s %s %s", c.CmdName, "-F", id)
 	stdout, _ := exec.Command(c.EnvCmd.Cmd, c.EnvCmd.Option, arg).Output()
 
 	array := strings.Split(string(stdout), "\n")
@@ -97,8 +95,8 @@ func (c *CommandUtility) selectTypes(id string) {
 	)
 
 	var selected []int
-	for _, i := range idxs {
-		t := selectStrings[i]
+	for _, idx := range idxs {
+		t := selectStrings[idx]
 		x := t[:strings.Index(t, " ")]
 		if i, err := strconv.Atoi(x); err == nil {
 			selected = append(selected, i)
@@ -121,7 +119,4 @@ func (c *CommandUtility) selectTypes(id string) {
 		println("Cannot select more than 3.")
 		panic(-1)
 	}
-
-	// execute
-	c.execute(id)
 }

@@ -1,43 +1,63 @@
 package cmd
 
 import (
-	kz "github.com/kazuya0202/kazuya0202"
 	"github.com/ktr0731/go-fuzzyfinder"
 )
 
-func (st *selectType) setStringArray() {
-	st.arrayS = []string{
-		st.Default,
-		st.AudioOnly,
-		st.VideoOnly,
-		st.FullHD,
-		st.Best,
-		st.Available,
-		// st.Select,
+type selectType struct {
+	Default           string
+	AudioOnly         string
+	VideoOnly         string
+	Best              string
+	Available         string
+	Select            string
+	SelectEachFormat  string
+	FindFromAvailable string
+
+	// Format    string  // TODO
+	// OutputTitle string  // unnecessary
+
+	List     []string
+	Selected string
+}
+
+func (s *selectType) setStringArray() {
+	s.Default = "Default"
+	s.Best = "Best"
+	s.AudioOnly = "Audio only"
+	s.VideoOnly = "Video only"
+	s.SelectEachFormat = "Select each format"
+	s.FindFromAvailable = "Find (Select each format from available list)"
+	s.Available = "#Available list"
+	// st.Format = "#Format"  // TODO
+
+	s.List = []string{
+		s.Default,
+		s.AudioOnly,
+		s.VideoOnly,
+		s.Best,
+		s.Available,
+		s.Select,
+		s.SelectEachFormat,
+		s.FindFromAvailable,
 		// st.Format,
 	}
 }
 
-func (st *selectType) _select() string {
-	// any := false
-	// any = any || defs.IsAvailable || defs.IsBest || defs.IsDefault
-	// any = any || defs.IsFullHD || defs.IsM4A || defs.IsMP4 || defs.IsSelect
-
-	// if !any {
+func (s *selectType) selectType() {
 	if defs.IsSelect {
 		// fzf
 		idx, err := fuzzyfinder.Find(
-			st.arrayS,
-			func(i int) string { return st.arrayS[i] },
+			s.List,
+			func(i int) string { return s.List[i] },
 		)
-		kz.CheckErr(err)
+		CheckErr(err)
 
-		st.selected = st.arrayS[idx]
-		println("selected:", st.selected)
+		s.Selected = s.List[idx]
+		println("selected:", s.Selected)
 	}
-	return st.selected
 }
 
-func (st *selectType) isMatched(target string) bool {
-	return st.selected == target
+func (s *selectType) isMatched(target string) bool {
+	return s.Selected == target
 }
