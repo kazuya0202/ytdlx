@@ -4,6 +4,18 @@
 
 Supported multi URL(ID) and file that is enumerated URL(ID).
 
+## Installation
+
+Do one or the other.
+
++ Download binary from [Release](https://github.com/kazuya0202/ytdlx/releases) (**Recommend**)
+
++ Execute command `$ go get`
+
+  ```sh
+  $ go get github.com/kazuya0202/ytdlx
+  ```
+
 ## Usage (Download format)
 
 > `URL` == `URL | ID | FILE`
