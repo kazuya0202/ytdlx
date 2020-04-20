@@ -45,9 +45,9 @@ func newYoutube(str string) *Youtube {
 func (y *Youtube) isAvailable() bool {
 	return y.Pat.ID.MatchString(y.ID) && func() bool {
 		print(color.YellowString("Validating..."))
+		// get youtube title
 		err := exec.Command(cu.CmdName, "-s", y.ID).Run()
 		print("\r")
-
 		return err == nil
 	}()
 }
