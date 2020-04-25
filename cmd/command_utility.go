@@ -45,7 +45,8 @@ func (c *CommandUtility) shapeCommandString() string {
 
 func (c *CommandUtility) execute() {
 	c.Command = exec.Command(c.EnvCmd.Cmd, c.EnvCmd.Option, c.Arg)
-	log.Printf("[%s]: %s\n", color.BlueString("SUCCESS"), c.shapeCommandString())
+	// log.Printf("[%s]: %s\n", color.BlueString("SUCCESS"), c.shapeCommandString())
+	log.Printf("[%s]\n", color.BlueString("SUCCESS"))
 	ExecCmdInRealTime(c.Command)
 }
 

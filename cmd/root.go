@@ -83,8 +83,8 @@ var rootCmd = &cobra.Command{
 
 		if defs.IsSelect && !defs.IsSelectEachFormat {
 			st.selectType()
-			cu.determineOption(st)
 		}
+		cu.determineOption(st)
 
 		// is multi download
 		isMulti := len(yts) > 1
