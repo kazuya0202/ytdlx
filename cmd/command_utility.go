@@ -2,13 +2,11 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"os/exec"
 	"runtime"
 	"strconv"
 	"strings"
 
-	"github.com/fatih/color"
 	"github.com/ktr0731/go-fuzzyfinder"
 )
 
@@ -31,6 +29,10 @@ func (c *CommandUtility) determineEnvCommand() {
 	}
 }
 
+func (c *CommandUtility) setCommand() {
+	c.Command = exec.Command(c.EnvCmd.Cmd, c.EnvCmd.Option, c.Arg)
+}
+
 func (c *CommandUtility) setCommandName(cmdName string) {
 	c.CmdName = cmdName
 }
@@ -44,63 +46,77 @@ func (c *CommandUtility) shapeCommandString() string {
 }
 
 func (c *CommandUtility) execute() {
-	c.Command = exec.Command(c.EnvCmd.Cmd, c.EnvCmd.Option, c.Arg)
-	// log.Printf("[%s]: %s\n", color.BlueString("SUCCESS"), c.shapeCommandString())
-	log.Printf("[%s]\n", color.BlueString("SUCCESS"))
+	c.setCommand()
+	// println(c.shapeCommandString())
 	ExecCmdInRealTime(c.Command)
 }
 
 func (c *CommandUtility) determineOption(st selectType) {
-	// determine option
-	if defs.IsDefault || st.isMatched(st.Default) {
-		// default download
-		c.Option = ""
-	} else if defs.IsAvailable || st.isMatched(st.Available) {
-		// format list
+	// show available list.
+	if defs.IsAvailable || st.isMatched(st.Available) {
 		c.Option = "-F"
-	} else if defs.IsM4A || st.isMatched(st.AudioOnly) {
-		// audio download
-		c.Option = "-f bestaudio[ext=m4a]"
-	} else if defs.IsMP4 || st.isMatched(st.VideoOnly) {
-		// video download
-		c.Option = "-f bestvideo[ext=mp4]"
-	} else if defs.IsBest || st.isMatched(st.Best) {
-		// best format download
-		c.Option = "-f bestvideo[ext=mp4]+bestaudio[ext=m4a] --merge-output-format mp4"
-	} else if st.isMatched(st.SelectEachFormat) {
-		defs.IsSelectEachFormat = true
-	} else if st.isMatched(st.FindFromAvailable) {
-		defs.IsFindFromAvailable = true
+		return
 	}
+
+	// audio download.
+	if defs.IsM4A || st.isMatched(st.AudioOnly) {
+		// c.Option = "-f 'bestaudio[ext=m4a]/bestaudio'"
+		c.Option = "-f bestaudio"
+		return
+	}
+
+	// video download.
+	if defs.IsMP4 || st.isMatched(st.VideoOnly) {
+		c.Option = "-f bestvideo[ext=mp4]/bestvideo"
+		return
+	}
+
+	// select format each URL.
+	if st.isMatched(st.SelectEachFormat) {
+		defs.IsSelectEachFormat = true
+		return
+	}
+
+	// find from available list.
+	if st.isMatched(st.FindFromAvailable) {
+		defs.IsFindFromAvailable = true
+		return
+	}
+
+	// default download.
+	c.Option = "bestvideo+bestaudio/best"
+	// if st.isMatched(st.Default) {
+	// 	c.Option = "bestvideo+bestaudio/best"
+	// 	return
+	// }
 }
 
-func (c *CommandUtility) selectAvailableTypes(id string) {
-	arg := fmt.Sprintf("%s %s %s", c.CmdName, "-F", id)
+func (c *CommandUtility) selectAvailableTypes(URL string) {
+	arg := fmt.Sprintf("%s %s %s", c.CmdName, "-F", URL)
 	stdout, _ := exec.Command(c.EnvCmd.Cmd, c.EnvCmd.Option, arg).Output()
-
 	array := strings.Split(string(stdout), "\n")
 
-	var selectStrings []string
+	var selectable []string
 	for i := len(array) - 1; i >= 0; i-- {
 		x := array[i]
 		if len(x) > 0 {
 			if _, err := strconv.Atoi(x[:1]); err == nil {
-				selectStrings = append(selectStrings, x)
+				selectable = append(selectable, x)
 			}
 		}
 	}
 
 	idxs, _ := fuzzyfinder.FindMulti(
-		selectStrings,
-		func(i int) string { return selectStrings[i] },
+		selectable,
+		func(i int) string { return selectable[i] },
 	)
 
 	var selected []int
 	for _, idx := range idxs {
-		t := selectStrings[idx]
+		t := selectable[idx]
 		x := t[:strings.Index(t, " ")]
-		if i, err := strconv.Atoi(x); err == nil {
-			selected = append(selected, i)
+		if v, err := strconv.Atoi(x); err == nil {
+			selected = append(selected, v)
 		}
 	}
 

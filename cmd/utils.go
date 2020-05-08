@@ -72,7 +72,6 @@ func ExecCmdInRealTime(cmd *exec.Cmd) error {
 	if ret != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(ret)
 
 	return nil
 }

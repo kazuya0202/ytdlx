@@ -2,7 +2,17 @@
 
 ## Features
 
-Supported multi URL(ID) and file that is enumerated URL(ID).
++ Supported multi URL(ID) and file that is enumerated URL(ID).
++ The command easier to use than using pure youtube-dl.
+
+## Requirements
+
++ FFmpeg
+
+  ```sh
+  $ scoop install ffmpeg  # using Scoop
+  $ choco install ffmpeg  # using Chocolatey
+  ```
 
 ## Installation
 
@@ -22,9 +32,9 @@ Do one or the other.
 
 > `URL` == `URL | ID | FILE`
 
-### 1-1. Default
+### 1-1. Default (== Best)
 
-Downloads default format.
+Downloads default(best) format.
 
 ```sh
 $ ytdlx [URL]
@@ -50,16 +60,7 @@ $ ytdlx -v [URL]
 $ ytdlx --video [URL]
 ```
 
-### 1-4. Best
-
-Downloads best format.
-
-```sh
-$ ytdlx -b [URL]
-$ ytdlx --best [URL]
-```
-
-### 1-5. Select
+### 1-4. Select
 
 Downloads format that user selected.
 
@@ -72,7 +73,7 @@ $ ytdlx --select [URL]
 
 
 
-### 1-6. Select each
+### 1-5. Select each
 
 Downloads format that user selected each URL.
 
@@ -83,7 +84,7 @@ $ ytdlx -S [URL]
 $ ytdlx --select-each [URL]
 ```
 
-### 1-7. Find
+### 1-6. Find
 
 Downloads format that user selected from `format-list`.
 

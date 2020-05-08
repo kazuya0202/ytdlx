@@ -22,30 +22,29 @@ type selectType struct {
 }
 
 func (s *selectType) setStringArray() {
-	s.Default = "Default"
-	s.Best = "Best"
+	s.Default = "Default (best)"
 	s.AudioOnly = "Audio only"
 	s.VideoOnly = "Video only"
 	s.SelectEachFormat = "Select each format"
 	s.FindFromAvailable = "Find (Select each format from available list)"
-	s.Available = "#Available list"
+	s.Available = "Show available list [* No download]"
+
 	// st.Format = "#Format"  // TODO
 
 	s.List = []string{
 		s.Default,
 		s.AudioOnly,
 		s.VideoOnly,
-		s.Best,
-		s.Available,
-		s.Select,
 		s.SelectEachFormat,
 		s.FindFromAvailable,
+		s.Available,
+
 		// st.Format,
 	}
 }
 
 func (s *selectType) selectType() {
-	if defs.IsSelect {
+	if defs.IsSelect || defs.IsSelectEachFormat {
 		// fzf
 		idx, err := fuzzyfinder.Find(
 			s.List,

@@ -18,10 +18,10 @@ limitations under the License.
 
 import (
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/fatih/color"
+	kz "github.com/kazuya0202/kazuya0202"
 	"github.com/spf13/cobra"
 )
 
@@ -32,8 +32,6 @@ const baseCommand string = "youtube-dl"
 type ArgDefaults struct {
 	IsM4A               bool
 	IsMP4               bool
-	IsBest              bool
-	IsDefault           bool
 	IsAvailable         bool
 	IsSelect            bool
 	IsSelectEachFormat  bool
@@ -44,36 +42,36 @@ type ArgDefaults struct {
 }
 
 var (
-	defs ArgDefaults
-	cu   CommandUtility
+	defs   ArgDefaults
+	cu     CommandUtility
+	status *kz.StatusString
 )
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "ytdlx [YouTube-URL | YouTuve-ID]",
+	Use:   "ytdlx [URL | ID]",
 	Short: "The command to make youtube-dl easy to use.",
 	Long:  `The command to make youtube-dl easy to use.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		var yts []*Youtube
+		status = kz.NewStatusString()
 
 		cu.setCommandName(baseCommand)
 		cu.determineEnvCommand()
 
 		if len(args) < 1 {
-			print(color.GreenString("enter") + "> ")
-			args = append(args, GetInput())
+			args = append(args, kz.GetInput("enter"))
 		}
 
 		// append all target.
 		for _, arg := range args {
 			if Exists(arg) {
 				// if arg is file
-				for _, x := range readFileContent(arg) {
-					yts = append(yts, newYoutube(x))
-				}
+				ar := readFileContent(arg)
+				yts = append(yts, newYoutubeAlphaArray(ar)...)
 			} else {
 				// URL or ID.
-				yts = append(yts, newYoutube(arg))
+				yts = append(yts, newYoutubeAlpha(arg))
 			}
 		}
 
@@ -89,13 +87,20 @@ var rootCmd = &cobra.Command{
 		// is multi download
 		isMulti := len(yts) > 1
 
-		for i, y := range yts {
+		i := 0
+		for _, y := range yts {
+			i++ // filename index
 			println("\n>", y.URL)
 
 			if !y.isAvailable() {
-				log.Printf("[%s]: '%s' is not valid URL.\n", color.BlueString("ERROR"), y.URL)
+				println(color.RedString("ERROR"))
+				s := fmt.Sprintf("'%s' is not valid URL. Skip this URL.", y.URL)
+				status.DisplayWarning(s)
+				i--
 				continue
 			}
+
+			println(color.BlueString("SUCCESS"))
 
 			if defs.IsSelectEachFormat {
 				// select every download.
@@ -103,15 +108,15 @@ var rootCmd = &cobra.Command{
 				cu.determineOption(st)
 			} else if defs.IsFindFromAvailable {
 				// select every download by using fzf.
-				cu.selectAvailableTypes(y.ID)
+				cu.selectAvailableTypes(y.URL)
 			}
 
 			// command
-			cu.Arg = fmt.Sprintf("%s %s %s", cu.CmdName, cu.Option, y.ID)
+			cu.Arg = fmt.Sprintf("%s %s %s", cu.CmdName, cu.Option, y.URL)
 
 			if defs.OutputTitle != "" {
 				if isMulti {
-					cu.Arg += fmt.Sprintf(" -o %s_%03d", defs.OutputTitle, i+1)
+					cu.Arg += fmt.Sprintf(" -o %s_%03d", defs.OutputTitle, i)
 				} else {
 					cu.Arg += fmt.Sprintf(" -o %s", defs.OutputTitle)
 				}
@@ -137,13 +142,12 @@ func init() {
 
 	rootCmd.Flags().BoolVarP(&defs.IsAvailable, "format-list", "F", false, "Show available format list")
 	rootCmd.Flags().BoolVarP(&defs.IsFindFromAvailable, "find", "f", false, "Downloads selected from available format list")
-	rootCmd.Flags().BoolVarP(&defs.IsDefault, "default", "d", false, "Downloads default format")
 	rootCmd.Flags().BoolVarP(&defs.IsM4A, "audio", "a", false, "Downloads audio format only")
 	rootCmd.Flags().BoolVarP(&defs.IsMP4, "video", "v", false, "Downloads video format only")
-	rootCmd.Flags().BoolVarP(&defs.IsBest, "best", "b", false, "Downloads best format")
 	rootCmd.Flags().BoolVarP(&defs.IsSelect, "select", "s", false, "Downloads selected format")
 	rootCmd.Flags().BoolVarP(&defs.IsSelectEachFormat, "select-each", "S", false, "Downloads each selected format")
 	rootCmd.Flags().StringVarP(&defs.OutputTitle, "output", "o", "", "Output filename")
+
 	// rootCmd.Flags().StringVarP(&defs.format, "format", "f", "", "specify format")
 }
 
