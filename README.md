@@ -7,6 +7,14 @@
 
 ## Requirements
 
++ youtube-dl
+
+  ```sh
+  $ scoop install youtube-dl  # using Scoop
+  $ choco install youtube-dl  # using Chocolatey
+  $ pip install youtube-dl  # using pip
+  ```
+
 + FFmpeg
 
   ```sh
