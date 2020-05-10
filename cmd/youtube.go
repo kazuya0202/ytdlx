@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"os/exec"
+	"strings"
 )
 
 // Youtube ...
@@ -28,7 +29,9 @@ func (y *Youtube) isAvailable() bool {
 		return false
 	}
 
+	arg := strings.Join([]string{y.URL, cu.Option}, " ")
+	cmd := exec.Command(cu.CmdName, "-s", arg)
+
 	// check executable with sumilating youtube
-	err := exec.Command(cu.CmdName, "-s", y.URL, cu.Option).Run()
-	return err == nil
+	return cmd.Run() == nil
 }

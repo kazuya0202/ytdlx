@@ -37,6 +37,7 @@ type ArgDefaults struct {
 	IsSelectEachFormat  bool
 	IsFindFromAvailable bool
 	OutputTitle         string
+	IsPlaylist          bool
 
 	// Format      string  // TODO
 }
@@ -116,9 +117,9 @@ var rootCmd = &cobra.Command{
 
 			if defs.OutputTitle != "" {
 				if isMulti {
-					cu.Arg += fmt.Sprintf(" -o %s_%03d", defs.OutputTitle, i)
+					cu.appendArg(fmt.Sprintf("-o %s_%03d", defs.OutputTitle, i))
 				} else {
-					cu.Arg += fmt.Sprintf(" -o %s", defs.OutputTitle)
+					cu.appendArg(fmt.Sprintf("-o %s", defs.OutputTitle))
 				}
 			}
 
@@ -141,12 +142,13 @@ func init() {
 	cobra.OnInitialize(initConfig)
 
 	rootCmd.Flags().BoolVarP(&defs.IsAvailable, "format-list", "F", false, "Show available format list")
-	rootCmd.Flags().BoolVarP(&defs.IsFindFromAvailable, "find", "f", false, "Downloads selected from available format list")
-	rootCmd.Flags().BoolVarP(&defs.IsM4A, "audio", "a", false, "Downloads audio format only")
-	rootCmd.Flags().BoolVarP(&defs.IsMP4, "video", "v", false, "Downloads video format only")
-	rootCmd.Flags().BoolVarP(&defs.IsSelect, "select", "s", false, "Downloads selected format")
-	rootCmd.Flags().BoolVarP(&defs.IsSelectEachFormat, "select-each", "S", false, "Downloads each selected format")
+	rootCmd.Flags().BoolVarP(&defs.IsFindFromAvailable, "find", "f", false, "Download selected from available format list")
+	rootCmd.Flags().BoolVarP(&defs.IsM4A, "audio", "a", false, "Download audio format only")
+	rootCmd.Flags().BoolVarP(&defs.IsMP4, "video", "v", false, "Download video format only")
+	rootCmd.Flags().BoolVarP(&defs.IsSelect, "select", "s", false, "Download selected format")
+	rootCmd.Flags().BoolVarP(&defs.IsSelectEachFormat, "select-each", "S", false, "Download each selected format")
 	rootCmd.Flags().StringVarP(&defs.OutputTitle, "output", "o", "", "Output filename")
+	rootCmd.Flags().BoolVarP(&defs.IsPlaylist, "playlist", "p", false, "Download the playlist (option: --yes-playlist)")
 
 	// rootCmd.Flags().StringVarP(&defs.format, "format", "f", "", "specify format")
 }

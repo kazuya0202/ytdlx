@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	kz "github.com/kazuya0202/kazuya0202"
 	"github.com/ktr0731/go-fuzzyfinder"
 )
 
@@ -48,26 +49,52 @@ func (c *CommandUtility) shapeCommandString() string {
 func (c *CommandUtility) execute() {
 	c.setCommand()
 	// println(c.shapeCommandString())
-	ExecCmdInRealTime(c.Command)
+	kz.ExecCmdInRealTime(c.Command)
+}
+
+func (c *CommandUtility) clearOption() {
+	c.Option = ""
+}
+
+func (c *CommandUtility) appendOption(s string) {
+	c.Option = strings.Join([]string{c.Option, s}, " ")
+}
+
+func (c *CommandUtility) appendArg(s string) {
+	c.Arg = strings.Join([]string{c.Arg, s}, " ")
 }
 
 func (c *CommandUtility) determineOption(st selectType) {
+	c.clearOption()
+
+	// format option
+	c.determineFormatOption(st)
+
+	// playlist option
+	if defs.IsPlaylist {
+		c.appendOption("--yes-playlist")
+	} else {
+		c.appendOption("--no-playlist")
+	}
+}
+
+func (c *CommandUtility) determineFormatOption(st selectType) {
 	// show available list.
 	if defs.IsAvailable || st.isMatched(st.Available) {
-		c.Option = "-F"
+		c.appendOption("-F")
 		return
 	}
 
 	// audio download.
 	if defs.IsM4A || st.isMatched(st.AudioOnly) {
-		// c.Option = "-f 'bestaudio[ext=m4a]/bestaudio'"
-		c.Option = "-f bestaudio"
+		// c.appendOption("-f bestaudio[ext=m4a]/bestaudio")
+		c.appendOption("-f bestaudio")
 		return
 	}
 
 	// video download.
 	if defs.IsMP4 || st.isMatched(st.VideoOnly) {
-		c.Option = "-f bestvideo[ext=mp4]/bestvideo"
+		c.appendOption("-f bestvideo[ext=mp4]/bestvideo")
 		return
 	}
 
@@ -84,7 +111,8 @@ func (c *CommandUtility) determineOption(st selectType) {
 	}
 
 	// default download.
-	c.Option = "bestvideo+bestaudio/best"
+	c.appendOption("-f bestvideo+bestaudio/best")
+
 	// if st.isMatched(st.Default) {
 	// 	c.Option = "bestvideo+bestaudio/best"
 	// 	return
@@ -120,18 +148,20 @@ func (c *CommandUtility) selectAvailableTypes(URL string) {
 		}
 	}
 
+	c.clearOption() // clear option
 	if len(selected) == 0 {
-		c.Option = ""
+		c.appendOption("-f bestvideo+bestaudio/best")
 		println("Download with default format.")
 	} else if len(selected) == 1 {
-		c.Option = fmt.Sprintf("-f %d", selected[0])
+		// c.Option = fmt.Sprintf("-f %d", selected[0])
+		c.appendOption(fmt.Sprintf("-f %d", selected[0]))
 	} else if len(selected) == 2 {
 		// swap
 		if selected[0] > selected[1] {
 			selected[1], selected[0] = selected[0], selected[1]
 		}
-		c.Option = fmt.Sprintf("-f %d+%d", selected[0], selected[1])
-		c.Option += " --merge-output-format mp4"
+		c.appendOption(fmt.Sprintf("-f %d+%d", selected[0], selected[1]))
+		c.appendOption(" --merge-output-format mp4")
 	} else {
 		println("Cannot select more than 3.")
 		panic(-1)

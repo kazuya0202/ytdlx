@@ -8,12 +8,11 @@ type selectType struct {
 	Default           string
 	AudioOnly         string
 	VideoOnly         string
-	Best              string
 	Available         string
-	Select            string
 	SelectEachFormat  string
 	FindFromAvailable string
 
+	// Select            string
 	// Format    string  // TODO
 	// OutputTitle string  // unnecessary
 
