@@ -5,6 +5,31 @@
 + Supported multi URL(ID) and file that is enumerated URL(ID).
 + The command easier to use than using pure youtube-dl.
 
+### Example
+
+1. Preparing a file (url_list.txt) that enumerated URL(ID).
+
+   ```sh
+   # url_list.txt
+   https://youtu.be/~~~A
+   https://youtu.be/~~~B
+   ~~~C
+   ```
+
+   **Note:** If a line contains whitespace, it processes the string up to the whitespace as a URL.
+
+   ```sh
+   https://youtu.be/~~~A # comment
+   https://youtu.be/~~~B ~~~C
+   # ==> [https://youtu.be/~~~A, https://youtu.be/~~~B]
+   ```
+
+2. Execute, the download will start.
+
+   ```sh
+   $ ytdlx ./url_list.txt
+   ```
+
 ## Requirements
 
 + youtube-dl
@@ -135,4 +160,3 @@ The option is same as `$ youtube-dl -F`.
 $ ytdlx -F [URL]
 $ ytdlx --format-list [URL]
 ```
-
