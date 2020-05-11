@@ -87,8 +87,8 @@ func (c *CommandUtility) determineFormatOption(st selectType) {
 
 	// audio download.
 	if defs.IsM4A || st.isMatched(st.AudioOnly) {
-		// c.appendOption("-f bestaudio[ext=m4a]/bestaudio")
-		c.appendOption("-f bestaudio")
+		c.appendOption("-f bestaudio[ext=m4a]/bestaudio")
+		// c.appendOption("-f bestaudio")
 		return
 	}
 
