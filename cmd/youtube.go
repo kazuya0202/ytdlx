@@ -1,8 +1,8 @@
 package cmd
 
 import (
+	"fmt"
 	"os/exec"
-	"strings"
 )
 
 // Youtube ...
@@ -29,8 +29,9 @@ func (y *Youtube) isAvailable() bool {
 		return false
 	}
 
-	arg := strings.Join([]string{y.URL, cu.Option}, " ")
-	cmd := exec.Command(cu.CmdName, "-s", arg)
+	// --simulate | youtube-dl -s [OPT] URL
+	arg := fmt.Sprintf("%s -s %s %s", cu.CmdName, cu.Option, y.URL)
+	cmd := exec.Command(cu.EnvCmd.Cmd, cu.EnvCmd.Option, arg)
 
 	// check executable with sumilating youtube
 	return cmd.Run() == nil
