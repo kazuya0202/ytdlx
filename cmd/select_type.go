@@ -4,7 +4,8 @@ import (
 	"github.com/ktr0731/go-fuzzyfinder"
 )
 
-type selectType struct {
+// SelectTypes ...
+type SelectTypes struct {
 	Default           string
 	AudioOnly         string
 	VideoOnly         string
@@ -13,22 +14,22 @@ type selectType struct {
 	FindFromAvailable string
 
 	// Select            string
-	// Format    string  // TODO
+	// Format    string  // unnecessary
 	// OutputTitle string  // unnecessary
 
 	List     []string
 	Selected string
 }
 
-func (s *selectType) setStringArray() {
+func newSelectTypes() *SelectTypes {
+	var s SelectTypes
+
 	s.Default = "Default (best)"
 	s.AudioOnly = "Audio only"
 	s.VideoOnly = "Video only"
 	s.SelectEachFormat = "Select each format"
 	s.FindFromAvailable = "Find (Select each format from available list)"
 	s.Available = "Show available list [* No download]"
-
-	// st.Format = "#Format"  // TODO
 
 	s.List = []string{
 		s.Default,
@@ -37,12 +38,11 @@ func (s *selectType) setStringArray() {
 		s.SelectEachFormat,
 		s.FindFromAvailable,
 		s.Available,
-
-		// st.Format,
 	}
+	return &s
 }
 
-func (s *selectType) selectType() {
+func (s *SelectTypes) selectType() {
 	if defs.IsSelect || defs.IsSelectEachFormat {
 		// fzf
 		idx, err := fuzzyfinder.Find(
@@ -56,6 +56,6 @@ func (s *selectType) selectType() {
 	}
 }
 
-func (s *selectType) isMatched(target string) bool {
+func (s *SelectTypes) isMatched(target string) bool {
 	return s.Selected == target
 }

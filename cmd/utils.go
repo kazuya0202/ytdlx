@@ -2,26 +2,38 @@ package cmd
 
 import (
 	"bufio"
+	"fmt"
 	"log"
 	"os"
 	"runtime"
 	"strings"
+
+	"github.com/fatih/color"
+	"github.com/kazuya0202/kz"
 )
 
-// envCommand is struct.
-type envCommand struct {
-	Cmd    string // execute command
-	Option string // command option
+func escapeAmpersand(URL string) string {
+	// windows only | & => ^&
+	if runtime.GOOS == "windows" {
+		return strings.ReplaceAll(URL, "&", "^&")
+	}
+	return URL
 }
 
 // getEnvCommand determines command depend in os environment.
-func getEnvCommand() envCommand {
+func getEnvCommand() *kz.EnvCommand {
 	// windows
 	if runtime.GOOS == "windows" {
-		return envCommand{"cmd", "/c"}
+		return &kz.EnvCommand{
+			Cmd:    "cmd",
+			Option: "/c",
+		}
 	}
 	// other than windows
-	return envCommand{"sh", "-c"}
+	return &kz.EnvCommand{
+		Cmd:    "sh",
+		Option: "-c",
+	}
 }
 
 // readFileContent ...
@@ -35,8 +47,17 @@ func readFileContent(path string) []string {
 	scanner := bufio.NewScanner(fp)
 	for scanner.Scan() {
 		// array = append(array, scanner.Text())
-		x := strings.Split(scanner.Text(), " ")[0]
-		array = append(array, x)
+		x := strings.Split(scanner.Text(), "\n")
+		for _, line := range x {
+			for _, s := range strings.Split(line, " ") {
+				if s != "#" {
+					array = append(array, s)
+				} else {
+					break
+				}
+			}
+		}
+		// array = append(array, x...)
 	}
 	if err := scanner.Err(); err != nil {
 		panic(err)
@@ -59,7 +80,9 @@ func Exists(path string) bool {
 }
 
 // GetInput scans input string.
-func GetInput() string {
+func GetInput(title string) string {
+	fmt.Printf("%s> ", color.GreenString(title))
+
 	stdin := bufio.NewScanner(os.Stdin)
 	stdin.Scan()
 	return stdin.Text()
